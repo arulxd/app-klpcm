@@ -1,0 +1,36 @@
+@import 'tom-select/dist/css/tom-select.default.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- CUSTOM CSS TOM SELECT (Agar mirip Input Tailwind) --- */
+/* Menghilangkan shadow bawaan dan border default */
+.ts-control {
+    border: 1px solid #e2e8f0 !important; /* border-gray-200 */
+    border-radius: 0.5rem !important;      /* rounded-lg */
+    padding: 10px 15px !important;         /* samakan padding dengan input lain */
+    box-shadow: none !important;
+    font-size: 0.875rem !important;        /* text-sm */
+    background-color: transparent !important;
+}
+
+/* Warna border saat fokus */
+.ts-control.focus {
+    border-color: #3C50E0 !important; /* Warna Primary Tailwind Anda (Biru/Ungu) */
+    box-shadow: none !important;
+}
+
+/* Dropdown menu di bawahnya */
+.ts-dropdown {
+    border-radius: 0.5rem !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+    z-index: 50 !important; /* Agar di atas elemen lain */
+}
+
+/* Item pilihan di dalam dropdown */
+.ts-dropdown .option.active {
+    background-color: #eff6ff !important; /* bg-blue-50 */
+    color: #1e293b !important; /* text-slate-800 */
+}
