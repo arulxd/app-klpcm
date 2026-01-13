@@ -73,8 +73,11 @@
 
                 <div>
                     <label class="mb-2 block text-sm font-bold text-gray-700">No Registrasi / SEP <span class="text-red-500">*</span></label>
-                    <input type="text" name="no_registrasi" placeholder="Contoh: REG-2025-001" required
-                           class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition font-mono uppercase">
+                    <input type="text" name="no_registrasi" placeholder="Contoh: REG-2025-001" required value="{{ old('no_registrasi') }}"
+                           class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition font-mono uppercase @error('no_registrasi') border-red-500 @enderror">
+                                    @error('no_registrasi')
+                            <p class="mt-1 text-xs font-bold text-red-500">{{ $message }}</p>
+                        @enderror
                 </div>
 
                 <div>

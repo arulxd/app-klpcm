@@ -50,14 +50,22 @@ class RekamMedisController extends Controller
     }
 
     // 3. SIMPAN DATA
-    public function store(Request $request)
+   public function store(Request $request)
     {
         $request->validate([
+            // Validasi Unik: Cek tabel 'rekam_medis' kolom 'no_registrasi'
+            'no_registrasi' => 'required|string|unique:rekam_medis,no_registrasi',
+            
             'pasien_id' => 'required|exists:pasien,id',
             'dokter_id' => 'required|exists:dokter,id',
             'ruangan_id' => 'required|exists:ruangan,id',
             'tgl_masuk' => 'required|date',
             'tgl_pulang' => 'required|date|after_or_equal:tgl_masuk',
+            'cara_masuk' => 'required|string', // Pastikan ini ada jika di view ada
+        ], [
+            // PESAN KUSTOM SESUAI REQUEST
+            'no_registrasi.unique' => 'Nomor Rawat sudah ada pada data kunjungan, silakan cek kembali.',
+            'no_registrasi.required' => 'Nomor Registrasi wajib diisi.',
         ]);
 
         RekamMedis::create($request->all());

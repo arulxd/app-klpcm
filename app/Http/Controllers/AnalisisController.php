@@ -142,17 +142,45 @@ class AnalisisController extends Controller
 
     // 6. FORM EDIT
     public function edit($id)
-    {
-        $analisis = Analisis::with(['rekam_medis.pasien', 'detail_analisis'])->findOrFail($id);
-        $list_form = MasterFormulir::orderBy('nama')->get();
-        $list_kriteria = MasterKriteria::all()->groupBy('kategori');
+{
+    // 1. PERBAIKAN DI SINI: Ganti 'items' menjadi 'detail_analisis'
+    $analisis = Analisis::with(['rekam_medis.pasien', 'detail_analisis'])->findOrFail($id);
 
-        return view('analisis.edit', [
-            'analisis' => $analisis,
-            'list_form' => $list_form,
-            'list_kriteria' => $list_kriteria
-        ]);
+    // 2. List Form
+    $list_form = MasterFormulir::orderBy('nama')->get();
+    $js_form_list = $list_form->map(function($f) {
+        return ['value' => $f->id, 'label' => $f->nama];
+    });
+
+    // 3. List Kriteria
+    $list_kriteria = MasterKriteria::all()->groupBy('kategori');
+    $js_kriteria_list = collect();
+    foreach($list_kriteria as $kategori => $items) {
+        foreach($items as $item) {
+            $js_kriteria_list->push([
+                'value' => $item->id, 
+                'label' => strtoupper($kategori) . ' - ' . $item->item, 
+            ]);
+        }
     }
+
+    // 4. PERBAIKAN DI SINI JUGA: Ganti 'items' menjadi 'detail_analisis'
+    $js_existing_defects = $analisis->detail_analisis->map(function($detail) {
+        return [
+            'id' => $detail->id, 
+            'form_id' => $detail->formulir_id,
+            'kriteria_id' => $detail->kriteria_id,
+            'note' => $detail->catatan ?? ''
+        ];
+    })->values();
+
+    return view('analisis.edit', compact(
+        'analisis', 
+        'js_form_list', 
+        'js_kriteria_list', 
+        'js_existing_defects'
+    ));
+}
 
     // 7. UPDATE DATA
     public function update(Request $request, $id)

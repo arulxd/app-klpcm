@@ -1,27 +1,23 @@
-@php
-    // Data Form (Untuk Repeater)
-    $js_form_list = $list_form->map(function($f) {
-        return ['value' => $f->id, 'label' => $f->nama];
-    });
-    
-    // Data Kriteria (FORMAT HORIZONTAL: Kategori - Item)
-    $js_kriteria_list = collect();
-    foreach($list_kriteria as $kategori => $items) {
-        foreach($items as $item) {
-            $js_kriteria_list->push([
-                'value' => $item->id, 
-                // Format: IDENTIFIKASI - Nama Pasien
-                'label' => strtoupper($kategori) . ' - ' . $item->item, 
-            ]);
-        }
-    }
-@endphp
-
 <x-app-layout>
+    <style>
+        .ts-control {
+            border: 1px solid #d1d5db !important;
+            border-radius: 0.5rem !important;
+            padding: 10px 12px !important;
+            box-shadow: none !important;
+            background-color: #fff !important;
+            min-height: 45px;
+        }
+        .ts-control.focus {
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 2px #e0e7ff !important;
+        }
+        .ts-dropdown { z-index: 50 !important; }
+        .ts-control input { font-size: 0.875rem !important; }
+    </style>
+
     <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 class="text-title-md2 font-bold text-black text-2xl">
-            Revisi Analisis
-        </h2>
+        <h2 class="text-title-md2 font-bold text-black text-2xl">Revisi Analisis</h2>
         <nav>
             <ol class="flex items-center gap-2">
                 <li><a class="font-medium text-gray-500 hover:text-blue-600" href="{{ route('dashboard') }}">Dashboard /</a></li>
@@ -31,7 +27,6 @@
     </div>
 
     <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
-        
         <div class="border-b border-gray-200 py-5 px-7 bg-gray-50/50 rounded-t-xl">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xl border border-indigo-200">
@@ -64,79 +59,40 @@
                             </div>
                             <h4 class="text-sm font-bold text-gray-900">Semua Temuan Sudah Dihapus</h4>
                             <p class="mt-1 text-xs text-gray-500 mb-5">Klik "Update Perubahan" untuk menyimpan status menjadi LENGKAP.</p>
-                            
                             <button type="button" @click="addDefect()" class="text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
                                 + Tambah Temuan Baru
                             </button>
                         </div>
                     </template>
 
-                    <template x-for="(defect, index) in defects" :key="index">
+                    <template x-for="(defect, index) in defects" :key="defect.unique_id">
                         <div class="relative rounded-xl border border-gray-200 bg-gray-50/50 p-5 transition-all hover:shadow-md hover:border-indigo-200 hover:bg-white">
+                            
                             <button type="button" @click="removeDefect(index)" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition z-10">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>
 
                             <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-                                
-                                <div>
+                                <input type="hidden" :name="`defects[${index}][id]`" :value="defect.id">
+
+                                <div class="w-full" x-init="initTomSelect($el, index, 'form_id', defect.form_id)">
                                     <label class="mb-2 block text-xs font-bold uppercase text-gray-500">1. Nama Formulir</label>
-                                    <div x-data="customSelect({
-                                            options: formList,
-                                            model: defect.form_id,
-                                            placeholder: '-- Pilih Form --'
-                                         })" 
-                                         x-init="$watch('selected', val => defect.form_id = val)">
-                                        
-                                        <input type="hidden" :name="`defects[${index}][form_id]`" :value="selected">
-                                        
-                                        <div @click="toggle()" @click.outside="close()" class="relative cursor-pointer">
-                                            <div class="w-full rounded-lg border bg-white py-2.5 px-4 pr-10 text-sm font-medium outline-none transition"
-                                                 :class="open ? 'border-indigo-500 ring-2 ring-indigo-100' : 'border-gray-300 hover:border-indigo-400'">
-                                                <span class="block truncate" x-text="displayLabel" :class="selected ? 'text-black' : 'text-gray-500'"></span>
-                                                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
-                                                    <svg class="h-4 w-4 text-gray-400 transition-transform duration-200" :class="open ? 'rotate-180 text-indigo-500' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                                                </span>
-                                            </div>
-                                            <div x-show="open" class="absolute z-20 mt-1 w-full rounded-lg bg-white shadow-lg border border-gray-100 py-1 max-h-48 overflow-auto" style="display:none;">
-                                                <template x-for="opt in options" :key="opt.value">
-                                                    <div @click="select(opt.value)" class="py-2 px-4 hover:bg-indigo-50 hover:text-indigo-600 cursor-pointer text-sm text-gray-700 transition-colors border-b border-gray-50 last:border-0">
-                                                        <span x-text="opt.label"></span>
-                                                    </div>
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <select :name="`defects[${index}][form_id]`" class="w-full" placeholder="Cari Form...">
+                                        <option value="">Pilih Form...</option>
+                                        @foreach($js_form_list as $f)
+                                            <option value="{{ $f['value'] }}">{{ $f['label'] }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
 
-                                <div>
+                                <div class="w-full" x-init="initTomSelect($el, index, 'kriteria_id', defect.kriteria_id)">
                                     <label class="mb-2 block text-xs font-bold uppercase text-gray-500">2. Jenis Masalah</label>
-                                    <div x-data="customSelect({
-                                            options: kriteriaList,
-                                            model: defect.kriteria_id,
-                                            placeholder: '-- Pilih Item --'
-                                         })" 
-                                         x-init="$watch('selected', val => defect.kriteria_id = val)">
-                                        
-                                        <input type="hidden" :name="`defects[${index}][kriteria_id]`" :value="selected">
-                                        
-                                        <div @click="toggle()" @click.outside="close()" class="relative cursor-pointer">
-                                            <div class="w-full rounded-lg border bg-white py-2.5 px-4 pr-10 text-sm font-medium outline-none transition"
-                                                 :class="open ? 'border-indigo-500 ring-2 ring-indigo-100' : 'border-gray-300 hover:border-indigo-400'">
-                                                <span class="block truncate" x-text="displayLabel" :class="selected ? 'text-black' : 'text-gray-500'"></span>
-                                                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
-                                                    <svg class="h-4 w-4 text-gray-400 transition-transform duration-200" :class="open ? 'rotate-180 text-indigo-500' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                                                </span>
-                                            </div>
-                                            <div x-show="open" class="absolute z-20 mt-1 w-full rounded-lg bg-white shadow-lg border border-gray-100 py-1 max-h-48 overflow-auto" style="display:none;">
-                                                <template x-for="opt in options" :key="opt.value">
-                                                    <div @click="select(opt.value)" class="py-2 px-4 hover:bg-indigo-50 hover:text-indigo-600 cursor-pointer text-sm text-gray-700 transition-colors border-b border-gray-50 last:border-0">
-                                                        <span class="block font-medium" x-text="opt.label"></span>
-                                                    </div>
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <select :name="`defects[${index}][kriteria_id]`" class="w-full" placeholder="Cari Masalah...">
+                                        <option value="">Pilih Item...</option>
+                                        @foreach($js_kriteria_list as $k)
+                                            <option value="{{ $k['value'] }}">{{ $k['label'] }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
 
                                 <div>
@@ -169,49 +125,46 @@
     </div>
 
     <script>
-        // Load Data dari PHP
-        const formList = @json($js_form_list);
-        const kriteriaList = @json($js_kriteria_list);
-
         function defectHandler() {
             return {
-                // LOAD DATA LAMA DARI DATABASE (KUNCI EDIT)
-                defects: [
-                    @foreach($analisis->detail_analisis as $detail)
-                    {
-                        form_id: '{{ $detail->formulir_id }}',
-                        kriteria_id: '{{ $detail->kriteria_id }}',
-                        note: '{{ $detail->catatan }}'
-                    },
-                    @endforeach
-                ],
+                // Load data existing langsung dari variabel yang dikirim Controller
+                defects: @json($js_existing_defects).map(item => ({
+                    ...item,
+                    unique_id: Math.random()
+                })),
 
                 addDefect() {
-                    this.defects.push({ form_id: '', kriteria_id: '', note: '' });
+                    this.defects.push({ 
+                        unique_id: Math.random(),
+                        id: null, 
+                        form_id: '', 
+                        kriteria_id: '', 
+                        note: '' 
+                    });
                 },
+                
                 removeDefect(index) {
                     this.defects.splice(index, 1);
-                }
-            }
-        }
-
-        // Komponen Custom Select (Reusable)
-        function customSelect(config) {
-            return {
-                options: config.options,
-                selected: config.model, // Init dengan data lama
-                open: false,
-                placeholder: config.placeholder || 'Pilih...',
-                
-                get displayLabel() {
-                    if (!this.selected) return this.placeholder;
-                    // Pakai loose comparison (==) agar string '1' match dengan int 1
-                    const found = this.options.find(opt => opt.value == this.selected);
-                    return found ? found.label : this.placeholder;
                 },
-                toggle() { this.open = !this.open; },
-                close() { this.open = false; },
-                select(value) { this.selected = value; this.open = false; }
+
+                initTomSelect(el, index, fieldName, initialValue) {
+                    let selectEl = el.querySelector('select');
+                    
+                    if(selectEl && !selectEl.tomselect) {
+                        let ts = new TomSelect(selectEl, {
+                            create: false,
+                            sortField: { field: "text", direction: "asc" },
+                            placeholder: selectEl.getAttribute('placeholder'),
+                            onChange: (value) => {
+                                this.defects[index][fieldName] = value;
+                            }
+                        });
+
+                        if (initialValue) {
+                            ts.setValue(initialValue);
+                        }
+                    }
+                }
             }
         }
     </script>
