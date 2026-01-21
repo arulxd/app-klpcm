@@ -3,25 +3,59 @@
 <head>
     <title>Laporan Analisis KLPCM</title>
     <style>
-        body { font-family: sans-serif; font-size: 12px; }
+        /* RESET & UMUM */
+        body { font-family: sans-serif; font-size: 11px; margin: 0; padding: 0; }
         .header { text-align: center; margin-bottom: 20px; }
         .header h1 { margin: 0; font-size: 16px; text-transform: uppercase; }
         .header h2 { margin: 5px 0; font-size: 12px; color: #555; }
+
+        /* TEKNIK PECAH TABEL: */
+        /* Kita buat tabel terpisah-pisah, tapi border collapse agar terlihat menyatu */
+        .wrapper-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: -1px; /* Trik agar garis antar tabel tidak dobel */
+        }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        table th, table td { border: 1px solid #000; padding: 6px; text-align: left; vertical-align: top; }
-        table th { background-color: #f0f0f0; text-align: center; font-weight: bold; }
+        .wrapper-table th, .wrapper-table td {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            vertical-align: top;
+            text-align: left;
+        }
+
+        /* HEADER TABEL (Khusus Judul Kolom) */
+        .header-row th {
+            background-color: #f0f0f0;
+            text-align: center;
+            font-weight: bold;
+            vertical-align: middle;
+            height: 30px;
+        }
+
+        /* PERINTAH SAKTI: Mencegah tabel pasien terpotong */
+        .patient-block {
+            page-break-inside: avoid !important;
+        }
+
+        /* PENGATURAN LEBAR KOLOM (WAJIB FIX AGAR LURUS) */
+        .col-no { width: 4%; text-align: center; }
+        .col-rm { width: 10%; }
+        .col-pasien { width: 18%; }
         
-        .badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; display: inline-block; }
+        /* Kondisional Lebar (PHP logic nanti di-inject class) */
+        .col-form { width: 20%; } 
+        .col-kat  { width: 10%; text-align: center; }
+        .col-item { width: 20%; }
+        .col-ket  { width: 18%; }
+
+        /* Utility */
+        .badge { padding: 2px 5px; border-radius: 3px; font-size: 9px; font-weight: bold; display: inline-block; white-space: nowrap; }
         .badge-manual { background-color: #fef3c7; color: #92400e; border: 1px solid #fcd34d; } 
         .badge-electronic { background-color: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
-        
-        .footer { margin-top: 30px; text-align: right; font-size: 10px; color: #777; }
-        
-        .text-center { text-align: center; }
-        .font-bold { font-weight: bold; }
-        .text-red { color: red; }
+        .text-center { text-align: center !important; }
         .text-green { color: green; }
+        .text-red { color: red; }
     </style>
 </head>
 <body>
@@ -35,119 +69,89 @@
     </div>
 
     @php
-        $count_manual = 0;
-        $count_elektronik = 0;
-        $total_item_masalah = 0;
-
+        $count_manual = 0; $count_elektronik = 0; $total_item_masalah = 0;
         if($jenis == 'umum') {
             foreach($data as $row) {
                 foreach($row->detail_analisis as $detail) {
                     $total_item_masalah++;
-                    if($detail->formulir->kategori == 'manual') {
-                        $count_manual++;
-                    } else {
-                        $count_elektronik++;
-                    }
+                    if($detail->formulir->kategori == 'manual') $count_manual++; else $count_elektronik++;
                 }
             }
         }
+        // Atur lebar kolom dinamis biar rapi
+        $w_form = $jenis == 'umum' ? '20%' : '25%';
+        $w_item = $jenis == 'umum' ? '20%' : '25%';
     @endphp
 
     <div style="margin-bottom: 20px;">
         <table style="width: 100%; border: none;">
             <tr>
                 <td style="width: 50%; border: none; padding: 0;">
-                    <table style="width: 90%;">
-                        <tr>
-                            <th colspan="2" style="background-color: #e0e7ff;">Statistik Berkas</th>
-                        </tr>
-                        <tr>
-                            <td>Total Berkas Dianalisis</td>
-                            <td class="text-center">{{ $total }}</td>
-                        </tr>
-                        <tr>
-                            <td>Berkas Lengkap</td>
-                            <td class="text-center text-green">{{ $lengkap }}</td>
-                        </tr>
-                        <tr>
-                            <td>Tidak Lengkap (KLPCM)</td>
-                            <td class="text-center text-red">{{ $tidak_lengkap }}</td>
-                        </tr>
-                        <tr>
-                            <td>Persentase Kelengkapan</td>
-                            <td class="text-center font-bold">{{ $persentase }}%</td>
-                        </tr>
+                    <table style="width: 95%; border: 1px solid #ddd; border-collapse: collapse;">
+                        <tr><th colspan="2" style="background-color: #e0e7ff; border:1px solid #999; padding:4px;">Statistik Berkas</th></tr>
+                        <tr><td style="border:1px solid #ddd; padding:4px;">Total Berkas</td><td class="text-center" style="border:1px solid #ddd;">{{ $total }}</td></tr>
+                        <tr><td style="border:1px solid #ddd; padding:4px;">Berkas Lengkap</td><td class="text-center text-green" style="border:1px solid #ddd;">{{ $lengkap }}</td></tr>
+                        <tr><td style="border:1px solid #ddd; padding:4px;">Tidak Lengkap</td><td class="text-center text-red" style="border:1px solid #ddd;">{{ $tidak_lengkap }}</td></tr>
+                        <tr><td style="border:1px solid #ddd; padding:4px;">Persentase</td><td class="text-center font-bold" style="border:1px solid #ddd;">{{ $persentase }}%</td></tr>
                     </table>
                 </td>
-
                 @if($jenis == 'umum')
                 <td style="width: 50%; border: none; padding: 0;">
-                    <table style="width: 90%; float: right;">
-                        <tr>
-                            <th colspan="2" style="background-color: #fce7f3;">Statistik Item Ketidaklengkapan</th>
-                        </tr>
-                        <tr>
-                            <td>Total Item Masalah</td>
-                            <td class="text-center">{{ $total_item_masalah }}</td>
-                        </tr>
-                        <tr>
-                            <td>Kategori Manual (Kertas)</td>
-                            <td class="text-center"><span class="badge badge-manual">{{ $count_manual }} Item</span></td>
-                        </tr>
-                        <tr>
-                            <td>Kategori Elektronik (E-RME)</td>
-                            <td class="text-center"><span class="badge badge-electronic">{{ $count_elektronik }} Item</span></td>
-                        </tr>
+                    <table style="width: 95%; float: right; border: 1px solid #ddd; border-collapse: collapse;">
+                        <tr><th colspan="2" style="background-color: #fce7f3; border:1px solid #999; padding:4px;">Item Ketidaklengkapan</th></tr>
+                        <tr><td style="border:1px solid #ddd; padding:4px;">Total Item</td><td class="text-center" style="border:1px solid #ddd;">{{ $total_item_masalah }}</td></tr>
+                        <tr><td style="border:1px solid #ddd; padding:4px;">Manual</td><td class="text-center" style="border:1px solid #ddd;"><span class="badge badge-manual">{{ $count_manual }}</span></td></tr>
+                        <tr><td style="border:1px solid #ddd; padding:4px;">Elektronik</td><td class="text-center" style="border:1px solid #ddd;"><span class="badge badge-electronic">{{ $count_elektronik }}</span></td></tr>
                     </table>
                 </td>
-                @else
-                <td style="width: 50%; border: none;"></td>
                 @endif
             </tr>
         </table>
     </div>
 
-    <table>
+    <table class="wrapper-table header-row">
         <thead>
             <tr>
-                <th width="4%">No</th>
-                <th width="10%">Tgl & RM</th>
-                <th width="18%">Pasien & Dokter</th>
-                
-                <th width="{{ $jenis == 'umum' ? '20%' : '25%' }}">Nama Formulir</th>
-                
+                <th class="col-no">No</th>
+                <th class="col-rm">Tgl & RM</th>
+                <th class="col-pasien">Pasien & Dokter</th>
+                <th style="width: {{ $w_form }}">Nama Formulir</th>
                 @if($jenis == 'umum')
-                    <th width="10%">Kategori</th>
+                    <th class="col-kat">Kategori</th>
                 @endif
-                
-                <th width="{{ $jenis == 'umum' ? '20%' : '25%' }}">Masalah (Item)</th>
-                <th width="18%">Keterangan</th>
+                <th style="width: {{ $w_item }}">Masalah (Item)</th>
+                <th class="col-ket">Keterangan</th>
             </tr>
         </thead>
-        <tbody>
-            @php $no = 1; @endphp
-            @foreach($data as $row)
-                
+    </table>
+
+    @php $no = 1; @endphp
+    @foreach($data as $row)
+        
+        <table class="wrapper-table patient-block">
+            <tbody>
                 @if($row->detail_analisis->count() > 0)
                     @foreach($row->detail_analisis as $i => $detail)
                     <tr>
                         @if($i == 0)
-                            <td rowspan="{{ $row->detail_analisis->count() }}" class="text-center">{{ $no++ }}</td>
-                            <td rowspan="{{ $row->detail_analisis->count() }}">
+                            <td rowspan="{{ $row->detail_analisis->count() }}" class="col-no text-center">
+                                {{ $no++ }}
+                            </td>
+                            <td rowspan="{{ $row->detail_analisis->count() }}" class="col-rm">
                                 {{ \Carbon\Carbon::parse($row->tgl_analisis)->format('d/m/y') }}<br>
                                 <b>{{ $row->rekam_medis->no_rm }}</b>
                             </td>
-                            <td rowspan="{{ $row->detail_analisis->count() }}">
+                            <td rowspan="{{ $row->detail_analisis->count() }}" class="col-pasien">
                                 <b>{{ $row->rekam_medis->pasien->nama }}</b><br>
                                 <span style="color:#555; font-size:10px;">{{ $row->rekam_medis->ruangan->nama }}</span><br>
                                 <small>dr. {{ $row->rekam_medis->dokter->nama }}</small>
                             </td>
                         @endif
 
-                        <td>{{ $detail->formulir->nama }}</td>
+                        <td style="width: {{ $w_form }}">{{ $detail->formulir->nama }}</td>
                         
                         @if($jenis == 'umum')
-                            <td class="text-center">
+                            <td class="col-kat">
                                 @if($detail->formulir->kategori == 'manual')
                                     <span class="badge badge-manual">MANUAL</span>
                                 @else
@@ -156,48 +160,39 @@
                             </td>
                         @endif
 
-                            <td style="vertical-align: top;">
+                        <td style="width: {{ $w_item }}">
                             @if($detail->kriteria)
-                                {{-- Baris 1: Nama Item (Tebal) --}}
-                                <div style="font-weight: bold; margin-bottom: 2px;">
-                                    {{ $detail->kriteria->item }}
-                                </div>
-                                
-                                {{-- Baris 2: Kategori (Kecil, Miring, Abu-abu) --}}
-                                <div style="font-size: 9px; color: #666; font-style: italic;">
-                                    {{ $detail->kriteria->kategori }}
-                                </div>
+                                <b>{{ $detail->kriteria->item }}</b><br>
+                                <small style="color:#666; font-style:italic;">{{ $detail->kriteria->kategori }}</small>
                             @else
-                                {{-- Jika data master terhapus --}}
-                                <span style="color:red; font-size:10px;">-</span>
+                                <span style="color:red">-</span>
                             @endif
                         </td>
-                            <td>{{  $detail->catatan ?? '-' }}</td>
+                        <td class="col-ket">{{ $detail->catatan ?? '-' }}</td>
                     </tr>
                     @endforeach
 
                 @else
-                    {{-- JIKA BERKAS LENGKAP --}}
                     <tr>
-                        <td class="text-center">{{ $no++ }}</td>
-                        <td>
+                        <td class="col-no text-center">{{ $no++ }}</td>
+                        <td class="col-rm">
                             {{ \Carbon\Carbon::parse($row->tgl_analisis)->format('d/m/y') }}<br>
                             <b>{{ $row->rekam_medis->no_rm }}</b>
                         </td>
-                        <td>
+                        <td class="col-pasien">
                             <b>{{ $row->rekam_medis->pasien->nama }}</b><br>
                             <span style="color:#555; font-size:10px;">{{ $row->rekam_medis->ruangan->nama }}</span><br>
                             <small>dr. {{ $row->rekam_medis->dokter->nama }}</small>
                         </td>
-                        <td colspan="{{ $jenis == 'umum' ? 4 : 3 }}" class="text-center" style="padding: 15px; color: green; font-weight: bold;">
+                        <td colspan="{{ $jenis == 'umum' ? 4 : 3 }}" class="text-center" style="padding: 10px; color: green; font-weight: bold; background-color: #f0fdf4;">
                             BERKAS LENGKAP
                         </td>
                     </tr>
                 @endif
+            </tbody>
+        </table>
 
-            @endforeach
-        </tbody>
-    </table>
+    @endforeach
 
     <div class="footer">
         <p>Dicetak oleh: {{ Auth::user()->name }} pada {{ now()->format('d/m/Y H:i') }}</p>
